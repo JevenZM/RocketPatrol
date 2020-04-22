@@ -26,6 +26,11 @@ class Play extends Phaser.Scene {
         this.load.audio('sfx_select', './assets/blip_select12.wav');
         this.load.audio('sfx_explosion', './assets/explosion38.wav');
         this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
+        this.load.audio('background', './assets/Background Talking.m4a');
+        this.load.audio('Pop, ', './assets/Pop.m4a');
+        this.load.audio('Scream', './assets/Scream.m4a');
+        this.load.audio('Shotgun', './assets/Shotgun.m4a');
+        this.load.audio('Slap', './assets/Slap.m4a');
     }
 
     create() {
@@ -44,7 +49,10 @@ class Play extends Phaser.Scene {
         // define keys
         keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);    
+        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);  
+        
+        this.bgm = this.sound.add('background');
+        this.bgm.play();
 
         // animation config
         this.anims.create({
@@ -130,10 +138,14 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64, '(F)ire to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
+            this.bgm.stop();
         }, null, this); 
     }
 
     update() {
+        //random number
+        var random = Math.floor(Math.random() * 5);
+
         // check key input for restart or Menu
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyF)) {
             this.scene.restart(this.p1Score);
@@ -199,6 +211,21 @@ class Play extends Phaser.Scene {
         }
     }
 
+    
+    playsound() {
+        if(this.random == 1) {
+            this.sound.play('sfx_explosion');
+        } else if(this.random == 2) {
+            this.sound.play('Pop');
+        } else if(this.random == 3) {
+            this.sound.play('Scream');
+        } else if(this.random == 4) {
+            this.sound.play('Shotgun');
+        } else if(this.random == 0) {
+            this.sound.play('Slap');
+        }
+    }
+    
     shipExplode(ship) {
         //temporarily hide ship
         ship.alpha = 0;
@@ -213,6 +240,6 @@ class Play extends Phaser.Scene {
         //score increment and repaint
         this.p1Score += ship.points*(this.p1Rocket.vertSpeed/2);
         this.scoreLeft.text = this.p1Score;
-        this.sound.play('sfx_explosion');
+        playsound();
     }
 }
