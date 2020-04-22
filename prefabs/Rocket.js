@@ -9,13 +9,19 @@ class Rocket extends Phaser.GameObjects.Sprite {
         //track Rocket firing status
         this.isFiring = false;
 
+        //track Rocket horizontal speed
+        this.horSpeed = 2;
+
+        //track Rocket vertical speed
+        this.vertSpeed = 2;
+
         this.sfxRocket = scene.sound.add('sfx_rocket');
     }
 
     update() {
         //left/right movement
-        if(!this.isFiring) {
-            if(keyLEFT.isDown && this.x >=47) {
+        if(!this.isFiring || this.isFiring) {
+        if(keyLEFT.isDown && this.x >=47) {
                 this.x -= 2;
             } else if (keyRIGHT.isDown && this.x <=578) {
                 this.x += 2;
@@ -30,19 +36,21 @@ class Rocket extends Phaser.GameObjects.Sprite {
 
         //if fired, move up
         if(this.isFiring && this.y >=108) {
-            this.y -= 2;
+            this.y -= this.vertSpeed;
         }
 
         //reset on miss
         if(this.y <=108) {
-            this.isFiring = false;
-            this.y=431;
+            //this.isFiring = false;
+            this.y=410;
+            this.vertSpeed = this.vertSpeed + 2;
         }
     }
 
     //reset rocket to "ground"
     reset() {
         this.isFiring = false;
-        this.y = 431;
+        this.y = 410;
+        this.vertSpeed = 2;
     }
 }
