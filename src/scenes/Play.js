@@ -21,16 +21,20 @@ class Play extends Phaser.Scene {
         {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 5});
         this.load.spritesheet('MechPunch', './assets/MechPunch.png',
         {frameWidth: 32, frameHeight: 64, startFrame: 0, endFrame: 4});
+        this.load.spritesheet('Bonus', './assets/SuperSpaceship.png',
+        {frameWidth: 32, frameHeight: 32, startFrame: 0, endFrame: 9});
 
         //load audio
         this.load.audio('sfx_select', './assets/blip_select12.wav');
         this.load.audio('sfx_explosion', './assets/explosion38.wav');
         this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
-        this.load.audio('background', './assets/Background Talking.m4a');
-        this.load.audio('Pop, ', './assets/Pop.m4a');
-        this.load.audio('Scream', './assets/Scream.m4a');
-        this.load.audio('Shotgun', './assets/Shotgun.m4a');
-        this.load.audio('Slap', './assets/Slap.m4a');
+        this.load.audio('background', './assets/Background Talking.mp3');
+        this.load.audio('Pop', './assets/Pop.mp3');
+        this.load.audio('Scream', './assets/Scream.mp3');
+        this.load.audio('Shotgun', './assets/Shotgun.mp3');
+        this.load.audio('Slap', './assets/Slap.mp3');
+
+        //var timer = game.settings.gameTimer;
     }
 
     create() {
@@ -85,17 +89,27 @@ class Play extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'bonusanim',
+            frames: this.anims.generateFrameNumbers('Bonus', {start: 0, end: 5, first: 0}),
+            framerate: 8,
+            yoyo: false,
+            repeat: -1
+        });
+
         //add rocket
         this.p1Rocket = new Rocket(this,game.config.width/2 - 8, 410, 'rocket', 0).setScale().setOrigin(0,0);
         this.p1Rocket.anims.play('defloat');
 
         //add spaceship (x3)
-        this.ship01 = new Spaceship(this, game.config.width + 192, 132, 'spaceshipanim', 0, 30).setOrigin(0,0);
+        this.ship01 = new Spaceship(this, game.config.width + 192, 260, 'spaceshipanim', 0, 30).setOrigin(0,0);
         this.ship01.anims.play('default');  
         this.ship02 = new Spaceship(this, game.config.width + 96, 196, 'spaceshipanim', 0, 20).setOrigin(0,0);
         this.ship02.anims.play('default');  
-        this.ship03 = new Spaceship(this, game.config.width, 260, 'spaceshipanim', 0, 10).setOrigin(0,0);
-        this.ship03.anims.play('default');  
+        this.ship03 = new Spaceship(this, game.config.width, 164, 'spaceshipanim', 0, 10).setOrigin(0,0);
+        this.ship03.anims.play('default'); 
+        this.bonusShip = new Bonusship(this, game.config.width, 132, 'Bonus', 0, 50).setOrigin(0,0);
+        this.bonusShip.anims.play('bonusanim');
 
 
         //ship animations
@@ -126,6 +140,9 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.scoreLeft = this.add.text(69, 54, this.p1Score, scoreConfig);
+
+        //this.timeLeft = this.add.text(469, 54, this.timer, scoreConfig);
+
         //game over flag
         this.gameOver = false;
 
@@ -144,7 +161,11 @@ class Play extends Phaser.Scene {
 
     update() {
         //random number
-        var random = Math.floor(Math.random() * 5);
+        this.random = Math.floor(Math.random() * 5);
+        //console.log(this.random);
+
+        //this.timer -= 1;
+        //this.timeLeft.text = this.timer;
 
         // check key input for restart or Menu
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyF)) {
@@ -166,6 +187,7 @@ class Play extends Phaser.Scene {
             //this.ship02.anims.play('default');
             this.ship03.update();
             //this.ship03.anims.play('default');
+            this.bonusShip.update();
         }
 
         //check for ship firing
@@ -195,7 +217,15 @@ class Play extends Phaser.Scene {
             this.FIRING = false;
             this.shipExplode(this.ship01);
             this.p1Rocket.reset();
-           // this.ship01.reset();  
+           // thi
+        }
+
+        if(this.checkCollision(this.p1Rocket, this.bonusShip)) {
+            this.p1Rocket.anims.play('defloat');
+            this.FIRING = false;
+            this.shipExplode(this.bonusShip);
+            this.bonusShip.destroy();
+           // thi
         }
     }
 
@@ -212,20 +242,8 @@ class Play extends Phaser.Scene {
     }
 
     
-    playsound() {
-        if(this.random == 1) {
-            this.sound.play('sfx_explosion');
-        } else if(this.random == 2) {
-            this.sound.play('Pop');
-        } else if(this.random == 3) {
-            this.sound.play('Scream');
-        } else if(this.random == 4) {
-            this.sound.play('Shotgun');
-        } else if(this.random == 0) {
-            this.sound.play('Slap');
-        }
-    }
-    
+
+
     shipExplode(ship) {
         //temporarily hide ship
         ship.alpha = 0;
@@ -240,6 +258,21 @@ class Play extends Phaser.Scene {
         //score increment and repaint
         this.p1Score += ship.points*(this.p1Rocket.vertSpeed/2);
         this.scoreLeft.text = this.p1Score;
-        playsound();
+        if(this.random == 1) {
+            this.sound.play('sfx_explosion');
+            console.log(this.random);
+        } else if(this.random == 2) {
+            this.sound.play('Pop');
+            console.log(this.random);
+        } else if(this.random == 3) {
+            this.sound.play('Scream');
+            console.log(this.random);
+        } else if(this.random == 4) {
+            this.sound.play('Shotgun');
+            console.log(this.random);
+        } else if(this.random == 0) {
+            this.sound.play('Slap');
+            console.log(this.random);
+        }
     }
 }
